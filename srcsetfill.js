@@ -1,9 +1,5 @@
 
 (function ( w ) {
-	
-
-
-
 
 	w.srcsetfill = function () {
 		var images = document.getElementsByTagName('img'),
