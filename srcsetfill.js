@@ -25,6 +25,7 @@
 		};
 
 		for ( var i=0; i<images.length; i++ ){
+			var fallback = images[i].src;
 			if ( images[i].getAttribute('srcset') ) {
 				var sets = images[i].getAttribute('srcset').split(',');
 				buildSet(sets);
@@ -37,6 +38,8 @@
 							imgsrc = srcsets[size];
 						} else if ( size === 'infinity' && winWidth > (largestSize+infinityThreshold) ) {
 							imgsrc = srcsets[size];
+						} else {
+							imgsrc = fallback;
 						}
 					}
 				}
