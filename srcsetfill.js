@@ -1,21 +1,30 @@
 
 (function ( w ) {
+	var supportsSrcSet = function () {
+		var i = document.createElement('img');
+		return 'srcset' in i;
+	};
+
+	if (supportsSrcSet()) { return; } // your browser supports srcset so we dont need to continue.
 
 	w.srcsetfill = function () {
 		var images = document.getElementsByTagName('img'),
-			srcsets = {},
 			winWidth = w.document.documentElement.clientWidth,
 			infinityThreshold = 200;
 
+		// build the set from a string.
 		var buildSet = function (sets) {
+			var srcsets = {};
 			for (var si=0; si<sets.length; si++) {
 				var set = sets[si].replace(/^[\s]/, '').split(' ');
 				var setw = parseInt(set[1],10);
 				if (!set[1]) { setw = 'infinity'; }
 				srcsets[setw] = set[0];
 			}
+			return srcsets;
 		};
 
+		// Get the largest and smallest sizes from the set.
 		var getMinMaxSize = function (set) {
 			var sizes = {
 				max:0,
@@ -25,56 +34,38 @@
 				sizes.max = ( srcsets.hasOwnProperty(size) && parseInt(size,10) > sizes.max ) ? parseInt(size,10) : sizes.max;
 				sizes.min = ( srcsets.hasOwnProperty(size) && parseInt(size,10) < sizes.min || sizes.min === 0 ) ? parseInt(size,10) : sizes.min;
 			}
-
 			return sizes;
 		};
 
-		var setAttr = function (element,attr,value) {
-			if (!element.setAttribute) {
-				element[attr] = value;
-			} else {
-				element.setAttribute(attr,value);
-			}
-		};
-
-		var getAttr = function (element,attr) {
-			var value = null;
-			if (!element.getAttribute) {
-				value = element[attr];
-			} else {
-				value = element.getAttribute(attr,value);
-			}
-			return value;
-		};
-
 		for ( var i=0; i<images.length; i++ ) {
-			if ( !getAttr(images[i],'data-fallback')) {
-				setAttr(images[i],'data-fallback',images[i].src);
+			// Store the fallback image first since it will get lost once we start swapping out the src.
+			if ( !images[i].getAttribute('data-fallback')) {
+				images[i].setAttribute('data-fallback',images[i].src);
 			}
-			console.log(winWidth);
-			if ( getAttr(images[i],'srcset') ) {
-				var sets = getAttr(images[i],'srcset').split(',');
-				buildSet(sets);
-				var sizes = getMinMaxSize(srcsets);
+			if ( images[i].getAttribute('srcset') ) {
+				var sets = images[i].getAttribute('srcset').split(',');
 				var imgsrc = '';
+				var srcsets = buildSet(sets);
+				var sizes = getMinMaxSize(srcsets);
 
 				for (var size in srcsets) {
 					if ( srcsets.hasOwnProperty(size) ) {
 						if (winWidth > size && size !== 'infinity') {
 							imgsrc = srcsets[size];
 						} else if (winWidth < sizes.min && size !== 'infinity') {
-							imgsrc = getAttr(images[i],'data-fallback');
+							imgsrc = images[i].getAttribute('data-fallback');
 						} else if ( size === 'infinity' && winWidth > (sizes.max+infinityThreshold) ) {
 							imgsrc = srcsets[size];
 						} 
 					}
 				}
+				
 				images[i].src = imgsrc;
 			}
 		}
 	};
-	
 
+	// taken from picturefill https://github.com/scottjehl/picturefill
 	// Run on resize and domready (w.load as a fallback)
 	if( w.addEventListener ){
 		w.addEventListener( "resize", w.srcsetfill, false );
