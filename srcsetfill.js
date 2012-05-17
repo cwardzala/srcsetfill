@@ -33,7 +33,7 @@
 				var imgsrc = '';
 				for (var size in srcsets) {
 					if ( srcsets.hasOwnProperty(size) ) {
-						if (winWidth >= size && size !== 'infinity') {
+						if (winWidth > size && size !== 'infinity') {
 							imgsrc = srcsets[size];
 						} else if ( size === 'infinity' && winWidth > (largestSize+infinityThreshold) ) {
 							imgsrc = srcsets[size];
