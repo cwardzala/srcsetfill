@@ -16,29 +16,57 @@
 			}
 		};
 
-		var getLargestSize = function (set) {
-			var largest = 0;
-			for (var size in srcsets) {
-				largest = ( srcsets.hasOwnProperty(size) && parseInt(size,10) > largest ) ? size : largest;
+		var getMinMaxSize = function (set) {
+			var sizes = {
+				max:0,
+				min:0
+			};
+			for (var size in set) {
+				sizes.max = ( srcsets.hasOwnProperty(size) && parseInt(size,10) > sizes.max ) ? parseInt(size,10) : sizes.max;
+				sizes.min = ( srcsets.hasOwnProperty(size) && parseInt(size,10) < sizes.min || sizes.min === 0 ) ? parseInt(size,10) : sizes.min;
 			}
-			return parseInt(largest,10);
+
+			return sizes;
 		};
 
-		for ( var i=0; i<images.length; i++ ){
-			var fallback = images[i].src;
-			if ( images[i].getAttribute('srcset') ) {
-				var sets = images[i].getAttribute('srcset').split(',');
-				buildSet(sets);
+		var setAttr = function (element,attr,value) {
+			if (!element.setAttribute) {
+				element[attr] = value;
+			} else {
+				element.setAttribute(attr,value);
+			}
+		};
 
-				var largestSize = getLargestSize(srcsets);
+		var getAttr = function (element,attr) {
+			var value = null;
+			if (!element.getAttribute) {
+				value = element[attr];
+			} else {
+				value = element.getAttribute(attr,value);
+			}
+			return value;
+		};
+
+		for ( var i=0; i<images.length; i++ ) {
+			if ( !getAttr(images[i],'data-fallback')) {
+				setAttr(images[i],'data-fallback',images[i].src);
+			}
+			console.log(winWidth);
+			if ( getAttr(images[i],'srcset') ) {
+				var sets = getAttr(images[i],'srcset').split(',');
+				buildSet(sets);
+				var sizes = getMinMaxSize(srcsets);
 				var imgsrc = '';
+
 				for (var size in srcsets) {
 					if ( srcsets.hasOwnProperty(size) ) {
 						if (winWidth > size && size !== 'infinity') {
 							imgsrc = srcsets[size];
-						} else if ( size === 'infinity' && winWidth > (largestSize+infinityThreshold) ) {
+						} else if (winWidth < sizes.min && size !== 'infinity') {
+							imgsrc = getAttr(images[i],'data-fallback');
+						} else if ( size === 'infinity' && winWidth > (sizes.max+infinityThreshold) ) {
 							imgsrc = srcsets[size];
-						}
+						} 
 					}
 				}
 				images[i].src = imgsrc;
