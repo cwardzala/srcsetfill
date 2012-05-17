@@ -38,8 +38,6 @@
 							imgsrc = srcsets[size];
 						} else if ( size === 'infinity' && winWidth > (largestSize+infinityThreshold) ) {
 							imgsrc = srcsets[size];
-						} else {
-							imgsrc = fallback;
 						}
 					}
 				}
