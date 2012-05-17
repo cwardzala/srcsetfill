@@ -29,10 +29,8 @@
 				var sets = images[i].getAttribute('srcset').split(',');
 				buildSet(sets);
 
-				console.log(srcsets);
 				var largestSize = getLargestSize(srcsets);
 				var imgsrc = '';
-				console.log(largestSize+200);
 				for (var size in srcsets) {
 					if ( srcsets.hasOwnProperty(size) ) {
 						if (winWidth >= size && size !== 'infinity') {
